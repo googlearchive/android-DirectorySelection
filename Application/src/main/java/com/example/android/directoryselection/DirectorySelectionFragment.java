@@ -26,8 +26,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +35,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +124,7 @@ public class DirectorySelectionFragment extends Fragment {
                         .show();
             }
         });
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview_directory_entries);
+        mRecyclerView = rootView.findViewById(R.id.recyclerview_directory_entries);
         mLayoutManager = mRecyclerView.getLayoutManager();
         mRecyclerView.scrollToPosition(0);
         mAdapter = new DirectoryEntryAdapter(new ArrayList<DirectoryEntry>());
@@ -198,8 +200,13 @@ public class DirectorySelectionFragment extends Fragment {
         ContentResolver contentResolver = getActivity().getContentResolver();
         Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri,
                 DocumentsContract.getTreeDocumentId(uri));
-        Uri directoryUri = DocumentsContract
-                .createDocument(contentResolver, docUri, Document.MIME_TYPE_DIR, directoryName);
+        Uri directoryUri = null;
+        try {
+            directoryUri = DocumentsContract
+                    .createDocument(contentResolver, docUri, Document.MIME_TYPE_DIR, directoryName);
+        } catch (IOException e) {
+            Log.w(TAG, "IOException", e);
+        }
         if (directoryUri != null) {
             Log.i(TAG, String.format(
                     "Created directory : %s, Document Uri : %s, Created directory Uri : %s",
